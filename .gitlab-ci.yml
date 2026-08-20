@@ -1,0 +1,34 @@
+stages:
+  - test
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+  SUITE_XML_FILE: "testng-regression.xml"
+
+cache:
+  key: maven-repo
+  paths:
+    - .m2/repository/
+
+test:
+  stage: test
+  image: maven:3.9-eclipse-temurin-17
+  tags:
+    - docker
+  before_script:
+    - apt-get update -qq
+    - apt-get install -y -qq wget gnupg
+    - wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg
+    - echo "deb [signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list
+    - apt-get update -qq
+    - apt-get install -y -qq google-chrome-stable
+  script:
+    - mvn clean test -Denv=ci -Dsuite.xml.file=$SUITE_XML_FILE -Dbrowser=chrome
+  artifacts:
+    when: always
+    expire_in: 1 week
+    reports:
+      junit: target/surefire-reports/TEST-*.xml
+    paths:
+      - target/screenshots/
+      - target/surefire-reports/
