@@ -60,7 +60,7 @@ public abstract class AbstractPage {
 
     public String getHeadingText() {
         isLoaded();
-        return waitForStableText(pageHeading);
+        return withStaleRetry(() -> waitForStableText(pageHeading));
     }
 
     protected WebElement getPageHeadingElement() {
