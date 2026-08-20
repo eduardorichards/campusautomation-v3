@@ -9,6 +9,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.support.events.EventFiringDecorator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,10 +28,10 @@ public class DriverManager {
         ChromeOptions options = new ChromeOptions();
         if (ConfigReader.isHeadless()) {
             options.addArguments(
-                "--headless=new",
-                "--window-size=1920,1080",
-                "--no-sandbox",
-                "disable-dev-shm-usage");
+                    "--headless=new",
+                    "--window-size=1920,1080",
+                    "--no-sandbox",
+                    "disable-dev-shm-usage");
         }
         return new ChromeDriver(options);
     }
@@ -52,12 +53,15 @@ public class DriverManager {
         }
 
         WebDriver rawDriver = factory.get();
-        WebDriver driver = new LoggingDriverDecorator().decorate(rawDriver);
+
+        WebDriver driver = new EventFiringDecorator<>(
+                new LoggingDriverDecorator(),
+                new HighlightingListener(rawDriver)).decorate(rawDriver);
 
         driver.manage().timeouts().implicitlyWait(
                 Duration.ofSeconds(ConfigReader.getImplicitWaitSeconds()));
-        
-        log.info("Created {} driver on thread {}",browser, Thread.currentThread().getId());
+
+        log.info("Created {} driver on thread {}", browser, Thread.currentThread().getId());
 
         return driver;
     }
