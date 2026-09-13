@@ -15,7 +15,7 @@ pipeline {
     stages{
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'htpps://github.com/ediardorichards/campusautomation-v3.git'
+                git branch: 'main', url: 'https://github.com/eduardorichards/campusautomation-v3.git'
             }
         }
 
